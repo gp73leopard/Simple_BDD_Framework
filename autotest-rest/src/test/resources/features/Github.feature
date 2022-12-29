@@ -16,6 +16,7 @@
       | Accept | application/vnd.github.v3+json |
     * отправить запрос
     * статус код 200
+
     * извлечь данные
       | name     | $[?(@.full_name=='selenide/selenide')].name     |
       | id       | $[?(@.full_name=='selenide/selenide')].id       |
