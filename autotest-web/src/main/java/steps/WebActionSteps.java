@@ -11,7 +11,10 @@ import org.slf4j.LoggerFactory;
 import ru.lanit.at.utils.Sleep;
 import ru.lanit.at.web.pagecontext.PageManager;
 
+import java.io.File;
+
 import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.$x;
 
 
 public class WebActionSteps {
@@ -47,17 +50,74 @@ public class WebActionSteps {
         LOGGER.info("клик на элемент '{}'", elementName);
     }
 
+
+    /**
+     * Перевод с одного статуса в другой
+     * Негативная проверка в соответсвии с документацией https://docs.google.com/document/d/13qUAkmFGj3jV3hEnqMlAxitKblA_BgSTKprwEW-Yg88/edit#heading=h.hq3q6bj15b2w
+     * @params text... текст элемента
+     */
+    @Если("{string} c {string} на {string}")
+    public void clickOnElement1(String btn, String checkBox1, String checkBox2) {
+
+        try {
+
+            SelenideElement element1 = pageManager
+                    .getCurrentPage()
+                    .getElement(checkBox1);
+            SelenideElement element2 = pageManager
+                    .getCurrentPage()
+                    .getElement(checkBox2);
+            SelenideElement button = pageManager
+                    .getCurrentPage()
+                    .getElement(btn);
+
+            if (checkBox1.equals("Closed") && checkBox2.equals("Open") || checkBox1.equals("Closed") &&  checkBox2.equals("Duplicate")
+                   || checkBox1.equals("Closed") && checkBox2.equals("Resolved") || checkBox1.equals("Open") && checkBox2.equals("Reopened")
+                    || checkBox1.equals("Resolved") && checkBox2.equals("Open") || checkBox1.equals("Resolved") && checkBox2.equals("Duplicate")
+                    || checkBox1.equals("Duplicate") && checkBox2.equals("Open") || checkBox1.equals("Duplicate") && checkBox2.equals("Closed")
+                    || checkBox1.equals("Duplicate") && checkBox2.equals("Resolved") || checkBox1.equals("Reopened") && checkBox2.equals("Open")) {
+
+                throw new IllegalArgumentException("Переход из статуса в статус невозможен!");
+            } else {
+                element1
+                        .shouldBe(Condition.visible)
+                        .click();
+                button
+                        .shouldBe(Condition.visible)
+                        .click();
+                LOGGER.info("клик на элемент '{}'", btn);
+            }
+        } catch (IllegalArgumentException ex) {
+            return;
+        }
+        throw new IllegalArgumentException("Позитивный исход");
+    }
+
     /**
      * скролл до элемента
      *
      * @param elementName наименование элемента
      */
+
+
     @Когда("проскроллить страницу до элемента {string}")
     public void scrollToElement(String elementName) {
         SelenideElement element = pageManager.getCurrentPage().getElement(elementName);
         element.shouldBe(Condition.visible)
                 .scrollIntoView("{block: 'center'}");
         LOGGER.info("скролл страницы до элемента '{}'", elementName);
+    }
+
+
+    /**
+     * Добавить txt файл в качестве вложения
+     *
+     *
+     */
+
+    @Когда("добавить файл в аттач")
+    public void uploadFile(){
+        $x("//input[@type='file']").uploadFile(new File("./autotest-web/src/test/resources/test.txt"));
     }
 
     /**
@@ -94,6 +154,18 @@ public class WebActionSteps {
                 .setValue(value);
         LOGGER.info("в поле '{}' введено значение '{}'", field, value);
     }
+
+    @Когда("выбрать из списка {string} опцию {string}")
+    public void selectOption(String select, String value){
+        SelenideElement selectElement = pageManager
+                .getCurrentPage()
+                .getElement(select);
+        selectElement
+                .shouldBe(Condition.visible)
+                .selectOption(value);
+        LOGGER.info("в списке '{}' выбрана опция'{}'", select, value);
+    }
+
 
     /**
      * Очистка поля
